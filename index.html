@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduProLink: Interactive Strategic Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - EdTech Market Growth: Report Info (Growth stats) -> Goal (Show potential) -> Viz (Chart.js Bar Chart) -> Interaction (Hover for values) -> Justification (Clear visual of growth) -> Library (Chart.js).
+        - Prof. Networking Market Growth: Report Info (Growth stats) -> Goal (Show potential) -> Viz (Chart.js Bar Chart) -> Interaction (Hover for values) -> Justification (Clear visual of growth) -> Library (Chart.js).
+        - Comparative Analysis Table: Report Info (Table data) -> Goal (Easy comparison) -> Viz (HTML/Tailwind Table) -> Interaction (Static) -> Justification (Direct comparison) -> Library (HTML/Tailwind).
+        - Monetization Tiers: Report Info (Tier details) -> Goal (Clear presentation) -> Viz (Interactive HTML/Tailwind Table) -> Interaction (Click to expand/collapse tier details) -> Justification (Manage complexity) -> Library (HTML/Tailwind + JS).
+        - KSFs Table: Report Info (Table data) -> Goal (Clear presentation) -> Viz (HTML/Tailwind Table) -> Interaction (Static) -> Justification (Standard) -> Library (HTML/Tailwind).
+        - SWOT Table: Report Info (Table data) -> Goal (Clear presentation) -> Viz (HTML/Tailwind Table) -> Interaction (Static) -> Justification (Standard) -> Library (HTML/Tailwind).
+        - Textual Content: Report Info (Narrative sections) -> Goal (Inform/Explain) -> Viz (Styled HTML paragraphs, lists, headings) -> Interaction (Collapsible sections for dense info) -> Justification (Readability, manage page length) -> Library (HTML/Tailwind + JS).
+        - All diagrams/visuals are HTML/CSS/Tailwind based or Canvas (Chart.js). No SVG/Mermaid. Structure supports logical flow from market understanding to platform specifics and future outlook. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #0D9488; font-weight: 600; border-bottom: 2px solid #0D9488; }
+        .nav-link:hover { color: #0F766E; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+        .collapsible-content.open { max-height: 2000px; /* Adjust as needed */ }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; color: #1e293b; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        h4 { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #475569; }
+        p, li { color: #475569; line-height: 1.6; margin-bottom: 0.75rem; }
+        ul { list-style-type: disc; margin-left: 1.5rem; }
+        .card { background-color: white; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); margin-bottom: 1.5rem;}
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f3f4f6; font-weight: 600; color: #374151; }
+        .tooltip { position: absolute; background-color: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.875rem; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-teal-700">EduProLink</span>
+                    <span class="ml-2 text-slate-600 text-sm hidden sm:inline">Interactive Strategic Blueprint</span>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="#executive-summary" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Executive Summary</a>
+                    <a href="#market-analysis" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Market Analysis</a>
+                    <a href="#competitive-landscape" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Competitive Landscape</a>
+                    <a href="#platform-concept" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Platform Concept</a>
+                    <a href="#monetization" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Monetization</a>
+                    <a href="#ksfs" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Success Factors</a>
+                    <a href="#future-vision" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Future Vision</a>
+                    <a href="#recommendations" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Recommendations</a>
+                </nav>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-slate-500 hover:text-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg">
+            <a href="#executive-summary" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Executive Summary</a>
+            <a href="#market-analysis" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Market Analysis</a>
+            <a href="#competitive-landscape" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Competitive Landscape</a>
+            <a href="#platform-concept" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Platform Concept</a>
+            <a href="#monetization" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Monetization</a>
+            <a href="#ksfs" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Success Factors</a>
+            <a href="#future-vision" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Future Vision</a>
+            <a href="#recommendations" class="block nav-link px-3 py-3 text-base font-medium text-slate-700 hover:bg-teal-50">Recommendations</a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <section id="executive-summary" class="section">
+            <div class="card">
+                <h2>Executive Summary 💡</h2>
+                <p>Welcome to the interactive strategic blueprint for EduProLink. This application is designed to provide an engaging overview of the platform's vision, market positioning, and strategic roadmap. EduProLink aims to be a pioneering online environment merging academic resource sharing (like Studocu) with professional networking and career development (like LinkedIn).</p>
+                <p>The platform targets two main user groups: Lecturers/Teachers, who can share educational materials, earn income, and build their professional brand; and Students, who gain access to academic resources and build connections for academic and career success. This document explores the significant market opportunity, competitive landscape, core features, monetization strategy, key success factors, and future vision for EduProLink. Use the navigation above to explore different sections of the blueprint.</p>
+            </div>
+        </section>
+
+        <section id="market-analysis" class="section">
+            <div class="card">
+                <h2>Market Landscape & Opportunity Analysis 📈</h2>
+                <p>This section delves into the dynamic EdTech and Professional Networking markets, highlighting their growth, key trends, and the increasing demand for integrated solutions like EduProLink. Understanding these market forces is crucial for positioning the platform effectively and capitalizing on emerging opportunities. We will explore the individual markets and the synergistic potential when their functionalities converge.</p>
+                
+                <h3>The EdTech Market</h3>
+                <p>The global EdTech market is experiencing robust growth, projected to expand significantly. Key drivers include demand for online learning, digital transformation in teaching, and emphasis on lifelong learning. Trends like AI-powered personalized learning and mobile learning are prominent.</p>
+                <div class="chart-container my-6">
+                    <canvas id="edTechMarketChart"></canvas>
+                </div>
+                <p class="text-sm text-center text-slate-600">EdTech Market Size Projection (USD Billions)</p>
+
+                <h3>The Professional Networking Market</h3>
+                <p>The professional networking market is also on a strong upward trajectory, fueled by a global workforce seeking career development and connections. AI integration for tailored recommendations is a key trend, alongside the rise of Academic Social Networking Sites (ASNS).</p>
+                <div class="chart-container my-6">
+                    <canvas id="profNetworkingMarketChart"></canvas>
+                </div>
+                <p class="text-sm text-center text-slate-600">Professional Networking Market Size Projection (USD Billions)</p>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold">Demand for Integrated Platforms (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <p>Evidence suggests a growing user demand for platforms bridging academic study and professional career development. Students expect higher education to prepare them for careers they are passionate about, and many feel current systems fall short. Educators also seek integrated professional environments for skill improvement and collaboration.</p>
+                    <ul>
+                        <li>8 out of 10 students believe higher education should primarily prepare them for a job/career they love.</li>
+                        <li>Fewer than half of these students feel their colleges effectively meet this expectation.</li>
+                        <li>Nearly two-thirds of students expect professors to play an active role in their career preparation.</li>
+                        <li>Educators actively participate in Professional Learning Networks (PLNs) to improve job skills and share best practices.</li>
+                    </ul>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold">Key Insights on Market Convergence (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>The Symbiotic Growth of EdTech and Professional Networking:</h4>
+                    <p>The growth in these markets reflects the increasing integration of education with an individual's entire career lifecycle. Continuous learning and adaptation are paramount, driving demand for holistic solutions.</p>
+                    <h4>The "Career-Integrated Learning" Imperative as an Unmet Need:</h4>
+                    <p>Students demand that academic experiences translate directly into career preparedness. Existing platforms often don't fully satisfy this nuanced demand for learning intrinsically linked to desirable career paths.</p>
+                    <h4>Educator Evolution: Beyond Content Delivery:</h4>
+                    <p>Educators seek digital environments supporting multifaceted professional lives, including development, networking, monetization of expertise, and brand building. EduProLink aims to provide this ecosystem.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="competitive-landscape" class="section">
+            <div class="card">
+                <h2>Competitive Landscape & The Hybrid Advantage 🎯</h2>
+                <p>This section analyzes key players like Studocu and LinkedIn to understand their strengths, weaknesses, and how EduProLink can carve out a unique space. By identifying the gaps in the current market, we highlight the compelling case for a hybrid platform that synergizes academic resources with professional development.</p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card bg-teal-50">
+                        <h3 class="collapsible-trigger cursor-pointer text-teal-700 hover:text-teal-800 font-semibold">Studocu Analysis (Click to expand) <span class="arrow_icon">▼</span></h3>
+                        <div class="collapsible-content">
+                            <p><strong>Core:</strong> Student community (18-25 yrs) for shared study documents (20M+), AI tools. Mission: collaborative learning, reduce inequality.</p>
+                            <p><strong>Monetization:</strong> Freemium (premium subscriptions for full access, ads). Students can earn by uploading (payouts may decrease).</p>
+                            <p><strong>Strengths:</strong> Strong student engagement, extensive material library, user-friendly, mission-driven.</p>
+                            <p><strong>Weaknesses:</strong> Content quality/accuracy issues (reliance on user-gen), limited monetization, potential copyright concerns, depends on continuous user activity.</p>
+                            <p><strong>Relevance for EduProLink:</strong> Validates demand for shared resources & freemium. Highlights need for quality control & better monetization for EduProLink.</p>
+                        </div>
+                    </div>
+                    <div class="card bg-sky-50">
+                        <h3 class="collapsible-trigger cursor-pointer text-sky-700 hover:text-sky-800 font-semibold">LinkedIn Analysis (Click to expand) <span class="arrow_icon">▼</span></h3>
+                        <div class="collapsible-content">
+                            <p><strong>Core:</strong> World's largest professional network (1B+ members). Profiles, content sharing, groups, job board, LinkedIn Learning (16k+ courses).</p>
+                            <p><strong>Monetization:</strong> Diversified: Talent Solutions, Marketing Solutions, Premium Subscriptions (Career, Business, Sales Navigator, Recruiter Lite - $2B+ annual revenue for Premium).</p>
+                            <p><strong>Strengths:</strong> Dominant market position, strong brand, unparalleled targeting, advanced analytics, robust monetization.</p>
+                            <p><strong>Weaknesses (for EduProLink's goals):</strong> Not for in-depth academic document sharing or student-lecturer academic interactions. Content can be self-promotional.</p>
+                            <p><strong>Relevance for EduProLink:</strong> Blueprint for successful network building & scaling, sophisticated monetization. EduProLink can replicate depth in a specialized niche.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mt-8">Comparative Analysis: Studocu vs. LinkedIn vs. EduProLink</h3>
+                <div class="table-responsive my-4">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Aspect</th>
+                                <th>Studocu</th>
+                                <th>LinkedIn</th>
+                                <th class="bg-teal-100 text-teal-800">EduProLink (Proposed)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Primary Audience</td>
+                                <td>Students (18-25)</td>
+                                <td>Professionals, Job Seekers</td>
+                                <td class="bg-teal-50">Students, Lecturers, Institutions, Employers</td>
+                            </tr>
+                            <tr>
+                                <td>Core Value</td>
+                                <td>Shared study materials, AI help</td>
+                                <td>Networking, Career Dev, Jobs</td>
+                                <td class="bg-teal-50"><strong>Synergy:</strong> Academic resources + Professional networking & Career dev.</td>
+                            </tr>
+                            <tr>
+                                <td>Academic Resources</td>
+                                <td>Doc sharing, AI tools</td>
+                                <td>Limited (Articles, LinkedIn Learning)</td>
+                                <td class="bg-teal-50">Verified lecturer content, AI study tools, Q&A with lecturers</td>
+                            </tr>
+                            <tr>
+                                <td>Professional Networking</td>
+                                <td>Basic (Study groups)</td>
+                                <td>Extensive profiles, connections, groups</td>
+                                <td class="bg-teal-50">Robust profiles (academic work to skills), connections, mentorship, job board</td>
+                            </tr>
+                            <tr>
+                                <td>Monetization (Platform)</td>
+                                <td>Premium subs, Ads</td>
+                                <td>Talent/Marketing Solutions, Premium subs</td>
+                                <td class="bg-teal-50">Multi-tier subs, institutional partnerships, targeted ads, commission on premium content</td>
+                            </tr>
+                            <tr>
+                                <td>Monetization (Lecturers)</td>
+                                <td>Upload docs (decreasing payout)</td>
+                                <td>Indirectly</td>
+                                <td class="bg-teal-50">Direct monetization of premium docs/courses, paid workshops, consulting visibility</td>
+                            </tr>
+                             <tr>
+                                <td>Unique Strength for Hybrid</td>
+                                <td>Student resource sharing model</td>
+                                <td>Networking, monetization, branding</td>
+                                <td class="bg-teal-50">Directly link verifiable academic work/skills to professional profiles & opportunities</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-8">Identifying the Gap: The Case for EduProLink (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Pain Points for Students:</h4>
+                    <p>Juggling multiple platforms (LMS, Studocu, LinkedIn, job boards) leads to "digital fatigue" and inefficiency. Difficulty bridging academic learning to career relevance and showcasing achievements effectively.</p>
+                    <h4>Pain Points for Lecturers:</h4>
+                    <p>Fragmented digital presence (LMS, ResearchGate, LinkedIn). Missed opportunities to connect shared content to reputation building, consultancy, or income in a streamlined way. Limited branding/PR tools on academic sharing sites.</p>
+                    <h4>Benefits of an Integrated Solution (EduProLink):</h4>
+                    <ul>
+                        <li><strong>For Students:</strong> Seamless journey from academic resources to professional networking, skill identification, and career opportunities. Better workforce preparation.</li>
+                        <li><strong>For Lecturers:</strong> Unified environment to showcase expertise, build network, monetize content, enhance reputation and influence.</li>
+                        <li><strong>For Institutions:</strong> Enhance student career readiness, support faculty development, alleviate digital fatigue.</li>
+                    </ul>
+                    <h4>Key Differentiators:</h4>
+                    <ul>
+                        <li><strong>Holistic Identity Management:</strong> Empower users to manage a dynamic identity weaving academic achievements, skills, and professional aspirations.</li>
+                        <li><strong>Enhanced Efficacy and Outcomes:</strong> Move beyond convenience to more effective achievement of academic and career goals by reducing fragmentation.</li>
+                        <li><strong>Networked Expertise Effect:</strong> Academic content fuels professional networking, and connections enhance discovery/validation of expertise.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="platform-concept" class="section">
+            <div class="card">
+                <h2>Refining the Platform Concept 🛠️</h2>
+                <p>This section outlines the core features and value proposition for EduProLink, detailing the distinct roles for Lecturers/Teachers and Students. It also explores strategic enhancements like AI integration and community building to create a truly unique and compelling platform that addresses the identified market needs.</p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-center">👥 Lecturer/Teacher Role</h3>
+                        <p class="text-center text-sm text-slate-500 mb-4">Content Creators & Network Nodes</p>
+                        <ul>
+                            <li><strong>Document Sharing & Management:</strong> Easy upload (notes, papers, etc.), version control, organization tools.</li>
+                            <li><strong>Content Monetization:</strong> Set prices, secure payments, track earnings, mix free/paid content.</li>
+                            <li><strong>Professional Profile & PR Tools:</strong> Enhanced profiles (publications, experience, expertise, student feedback), analytics, external sharing.</li>
+                            <li><strong>Networking:</strong> Connect with academics, students (mentorship), industry professionals; specialized groups.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-center">👥 Student Role</h3>
+                        <p class="text-center text-sm text-slate-500 mb-4">Content Consumers & Career Builders</p>
+                        <ul>
+                            <li><strong>Document Access & Advanced Search:</strong> Filter by course, lecturer, topic, ratings; search lecturers/peers.</li>
+                            <li><strong>Networking & Mentorship:</strong> Connect with lecturers, peers, industry professionals (alumni) for guidance and opportunities.</li>
+                            <li><strong>Career Development Tools:</strong> Job/internship postings, company profiles, skill-building resources linked to academic content.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Feature Phasing: "All functions of LinkedIn & Studocu" (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <p>Replicating all features is a phased approach:</p>
+                    <ol class="list-decimal ml-4">
+                        <li><strong>Phase 1 (MVP):</strong> Core document upload (free/paid), basic profiles, simple monetization for lecturers; document access, basic search, profiles for students. Secure registration, content hosting, payment integration.</li>
+                        <li><strong>Phase 2 (Enhancement & Network Growth):</strong> Advanced networking (groups, messaging, endorsements), enhanced PR/analytics for lecturers, basic career resources for students, improved search/recommendations.</li>
+                        <li><strong>Phase 3 (Full Feature Parity & Expansion):</strong> Full job board, sophisticated career tools for students, institutional partnerships, AI-driven personalized pathways.</li>
+                    </ol>
+                </div>
+
+                <h3 class="mt-6">Crafting a Dual Value Proposition</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h4>For Lecturers/Teachers:</h4>
+                        <p class="italic">"EduProLink: Amplify Your Impact, Income, and Influence. Share your academic expertise globally. Earn directly from your knowledge. Build a distinguished professional brand."</p>
+                    </div>
+                    <div>
+                        <h4>For Students:</h4>
+                        <p class="italic">"EduProLink: Ace Your Academics, Accelerate Your Career. Access quality, lecturer-verified materials. Connect with mentors, peers, and industry. Translate achievements into career success."</p>
+                    </div>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Strategic Enhancements (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Incorporating Artificial Intelligence (AI):</h4>
+                    <ul>
+                        <li><strong>Personalized Recommendations:</strong> For documents, connections (lecturers, peers, professionals).</li>
+                        <li><strong>Content Summarization & Analysis:</strong> Quick insights from documents, auto-tagging for lecturers.</li>
+                        <li><strong>Skill Mapping & Gap Analysis:</strong> Identify skill gaps from content engagement, recommend resources.</li>
+                        <li><strong>AI-Powered Tutors & Quizzes:</strong> Self-assessment tools, instant support.</li>
+                    </ul>
+                    <h4>Community Building Strategies:</h4>
+                    <ul>
+                        <li>Specialized Discussion Forums & Groups.</li>
+                        <li>Interactive Q&A Sections.</li>
+                        <li>Collaborative Projects & Study Groups.</li>
+                        <li>Platform-Hosted Events (Webinars, Virtual Career Fairs).</li>
+                        <li>Gamification & Recognition (Points, Badges).</li>
+                    </ul>
+                    <h4>Key Differentiators through Enhancement:</h4>
+                    <ul>
+                        <li><strong>"Verified Expertise" Flywheel for Lecturers:</strong> Shared academic content directly builds professional profile and reputation, creating a virtuous cycle of quality, visibility, and monetization.</li>
+                        <li><strong>"Actionable Pathways" for Students:</strong> Transform passive content consumption into active skill development and career exploration by linking academic engagement to skill identification, further learning, mentorship, and job opportunities.</li>
+                        <li><strong>Prioritizing Trust in Content for MVP:</strong> Emphasize lecturer verification, content guidelines, and student feedback from launch to build a reputation for high-quality, reliable academic resources.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="monetization" class="section">
+            <div class="card">
+                <h2>Monetization Strategy: Sustainable Multi-Tier Model 💰</h2>
+                <p>This section details EduProLink's proposed multi-tier monetization strategy. The approach is designed for long-term sustainability and growth, catering to the diverse needs of students, lecturers, and institutions through a mix of freemium access, premium subscriptions, commissions, and potential institutional partnerships and advertising.</p>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold">Overview of Relevant Monetization Models (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <ul>
+                        <li><strong>Freemium:</strong> Core services free to attract users, premium for advanced features (Duolingo, Spotify). Crucial for EduProLink user acquisition.</li>
+                        <li><strong>Subscription Tiers:</strong> Recurring fees for different feature levels (Netflix, LinkedIn Premium). Predictable revenue, user segmentation.</li>
+                        <li><strong>Commission-Based (Lecturers):</strong> Platform takes a percentage of content sales (Amazon, Patreon). Must be competitive.</li>
+                        <li><strong>Advertising:</strong> Targeted ads (academic software, career services). Ad-free for premium users.</li>
+                        <li><strong>Data Monetization (Ethical):</strong> Aggregated, anonymized insights with extreme caution, transparency, and user consent.</li>
+                        <li><strong>Institutional Sales:</strong> Platform access/services to universities (Handshake, Coursera for Campus). Significant revenue potential.</li>
+                    </ul>
+                </div>
+                
+                <h3 class="mt-6">Proposed Multi-Tier Model for EduProLink</h3>
+                <p>A freemium core with distinct premium tiers for students and lecturers, plus institutional sales and strategic advertising.</p>
+                
+                <div class="table-responsive my-4">
+                    <table id="monetizationTable">
+                        <thead>
+                            <tr>
+                                <th>Tier Name</th>
+                                <th>Target User(s)</th>
+                                <th class="w-1/3">Key Features (Click to expand)</th>
+                                <th>Indicative Price (USD)</th>
+                                <th>Core Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="tier-row">
+                                <td class="font-semibold">Free Tier - Student</td>
+                                <td>Students</td>
+                                <td class="features-cell">Limited doc access (3-5/month or previews), basic search, standard profile, limited group access.</td>
+                                <td>Free</td>
+                                <td>Basic academic help & network intro.</td>
+                            </tr>
+                            <tr class="tier-row">
+                                <td class="font-semibold">Free Tier - Lecturer</td>
+                                <td>Lecturers</td>
+                                <td class="features-cell">Std profile, limited doc uploads (some free, some for sale at std commission e.g., 25-30%), basic analytics, limited networking.</td>
+                                <td>Free</td>
+                                <td>Entry to share, test monetization.</td>
+                            </tr>
+                            <tr class="tier-row bg-green-50">
+                                <td class="font-semibold text-green-700">Student Pro</td>
+                                <td>Students</td>
+                                <td class="features-cell">Unlimited doc access, advanced search, ad-free, AI study tools (summaries, quizzes), offline access.</td>
+                                <td class="text-green-700">$7-12/month</td>
+                                <td class="text-green-700">Enhanced academic performance.</td>
+                            </tr>
+                            <tr class="tier-row bg-green-100">
+                                <td class="font-semibold text-green-800">Student Career Accelerator</td>
+                                <td>Students</td>
+                                <td class="features-cell">All Student Pro + advanced networking (profile views, enhanced messaging), exclusive career content, personalized job/internship recs, portfolio tools, AI skill gap analysis.</td>
+                                <td class="text-green-800">$18-29/month</td>
+                                <td class="text-green-800">Accelerated career readiness.</td>
+                            </tr>
+                            <tr class="tier-row bg-blue-50">
+                                <td class="font-semibold text-blue-700">Lecturer Pro</td>
+                                <td>Lecturers</td>
+                                <td class="features-cell">Unlimited doc uploads for sale, lower commission (e.g., 15-20%), advanced doc/revenue analytics, enhanced content visibility, bundling.</td>
+                                <td class="text-blue-700">$15-25/month</td>
+                                <td class="text-blue-700">Maximized income & impact.</td>
+                            </tr>
+                            <tr class="tier-row bg-blue-100">
+                                <td class="font-semibold text-blue-800">Lecturer Brand & Influence</td>
+                                <td>Lecturers</td>
+                                <td class="features-cell">All Lecturer Pro + advanced profile customization (personal website), student testimonials, host paid webinars/workshops, priority support, featured status, advanced networking insights.</td>
+                                <td class="text-blue-800">$30-50/month</td>
+                                <td class="text-blue-800">Elevated reputation & influence.</td>
+                            </tr>
+                             <tr class="tier-row bg-purple-50">
+                                <td class="font-semibold text-purple-700">Institutional Package</td>
+                                <td>Universities</td>
+                                <td class="features-cell">Campus-wide premium access, LMS integration, career services portal tools, institutional analytics, co-branding, dedicated support.</td>
+                                <td class="text-purple-700">Custom (Annual Sub.)</td>
+                                <td class="text-purple-700">Enhanced student/faculty outcomes.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-slate-500">Note: Click on "Key Features" cells in the table above to toggle detailed feature lists for each tier.</p>
+
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Strategies for Converting Free Users to Paid Tiers (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <ul>
+                        <li>Clearly demonstrate premium value with contextual upgrade prompts when limitations are hit.</li>
+                        <li>Strategic usage limitations on free tier (doc views, uploads, basic filters/analytics).</li>
+                        <li>Time-limited free trials of premium features.</li>
+                        <li>Personalized upgrade offers based on user activity.</li>
+                        <li>Content gating for exceptionally high-value resources or exclusive events.</li>
+                        <li>Showcase success stories and testimonials from premium users.</li>
+                        <li>Seamless and unobtrusive upgrade process.</li>
+                    </ul>
+                </div>
+                 <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Advanced Monetization Concepts (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>The Interdependent Value Monetization Loop:</h4>
+                    <p>Lecturers investing in premium branding tools enhance platform richness, benefiting students and making student premium tiers more attractive. More premium students create a larger, engaged audience for lecturers, making lecturer premium tiers more appealing. This synergy can be leveraged in marketing.</p>
+                    <h4>Institutional Sales as a Catalyst:</h4>
+                    <p>Early pursuit of institutional partnerships can solve the "cold start" problem by rapidly onboarding users, accelerating network effects, and providing stable recurring revenue. This de-risks growth.</p>
+                    <h4>Ethical Data Monetization:</h4>
+                    <p>Potential long-term stream, but requires extreme caution, transparency, user consent (opt-in), and potentially sharing value back with users/institutions to build trust. Privacy is paramount.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="ksfs" class="section">
+            <div class="card">
+                <h2>Key Success Factors (KSFs) & SWOT 🔑</h2>
+                <p>Launching and growing EduProLink successfully hinges on addressing critical factors common to two-sided marketplaces and online educational platforms. This section outlines these KSFs, along with a SWOT analysis to provide a balanced view of the platform's strategic positioning. Understanding these elements is vital for navigating challenges and capitalizing on strengths.</p>
+
+                <h3 class="mt-6">Key Success Factors & Strategic Actions</h3>
+                <div class="table-responsive my-4">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Key Success Factor (KSF)</th>
+                                <th>Strategic Action(s)</th>
+                                <th>Key Performance Indicators (KPIs)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. Solving Chicken-and-Egg Problem</td>
+                                <td>Strong early lecturer incentives (lower commissions, free premium), seed high-quality free content, student referrals, phased/niche rollout.</td>
+                                <td>Active lecturers & students, initial content volume, student/lecturer ratio, early adoption rates.</td>
+                            </tr>
+                            <tr>
+                                <td>2. Building Trust & Credibility</td>
+                                <td>Robust content moderation (AI & human), clear DMCA/copyright policies, lecturer verification, transparent ToS & policies.</td>
+                                <td>Low user-reported content issues, low plagiarism/copyright rates, user satisfaction with transparency (NPS).</td>
+                            </tr>
+                            <tr>
+                                <td>3. Superior User Experience (UX/UI)</td>
+                                <td>Intuitive navigation (academic & professional), mobile-first, accessible (WCAG) design, performance & reliability.</td>
+                                <td>Task completion rates, user engagement time, bounce rates, ease-of-use feedback.</td>
+                            </tr>
+                            <tr>
+                                <td>4. High Content Quality & Moderation</td>
+                                <td>AI screening, human review for flagged content, clear user reporting, promote quality indicators (ratings), incentivize quality contributions.</td>
+                                <td>Avg. content rating, % content flagged/removed, time to resolve issues, user perception of reliability.</td>
+                            </tr>
+                            <tr>
+                                <td>5. Robust & Scalable Tech Infrastructure</td>
+                                <td>Cloud-based, modular architecture, comprehensive data security (GDPR), high availability, robust API strategy.</td>
+                                <td>Platform uptime, system response times, scalability (cost/user), low security incidents.</td>
+                            </tr>
+                            <tr>
+                                <td>6. Effective Marketing & Branding</td>
+                                <td>Clear dual value propositions, multi-channel marketing (SEO, content, PPC, social, email), targeted campaigns, strategic partnerships.</td>
+                                <td>Website traffic, conversion rates (free to paid), CAC, brand awareness & sentiment.</td>
+                            </tr>
+                            <tr>
+                                <td>7. Successful Monetization & Conversion</td>
+                                <td>Attractive freemium & premium tiers, competitive lecturer commissions, valuable institutional packages, non-intrusive ads.</td>
+                                <td>Free-to-paid conversion rates, ARPU, LTV, institutional partnerships & revenue.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="mt-8">SWOT Analysis</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card bg-green-50">
+                        <h4 class="text-green-700">Strengths</h4>
+                        <ul class="list-none ml-0">
+                            <li>🔹 Unique Integrated Value Proposition</li>
+                            <li>🔹 Addresses Clear User Pain Points (fragmentation)</li>
+                            <li>🔹 Multiple Monetization Avenues</li>
+                            <li>🔹 Strong Network Effects Potential</li>
+                            <li>🔹 AI Integration Opportunities</li>
+                        </ul>
+                    </div>
+                    <div class="card bg-red-50">
+                        <h4 class="text-red-700">Weaknesses</h4>
+                         <ul class="list-none ml-0">
+                            <li>🔸 Complexity of Development & Management</li>
+                            <li>🔸 Potential for User Confusion (if UX poor)</li>
+                            <li>🔸 Dependence on Lecturers for Quality Content</li>
+                            <li>🔸 Content Moderation at Scale Challenges</li>
+                            <li>🔸 Balancing Dual User Needs</li>
+                        </ul>
+                    </div>
+                    <div class="card bg-sky-50">
+                        <h4 class="text-sky-700">Opportunities</h4>
+                         <ul class="list-none ml-0">
+                            <li>🔹 Growing EdTech & Prof. Networking Markets</li>
+                            <li>🔹 Demand for Career-Integrated Learning</li>
+                            <li>🔹 AI-Driven Innovation Potential</li>
+                            <li>🔹 Institutional Partnerships for Scale</li>
+                            <li>🔹 Lifelong Learning Expansion</li>
+                            <li>🔹 Global Market Potential</li>
+                        </ul>
+                    </div>
+                    <div class="card bg-amber-50">
+                        <h4 class="text-amber-700">Threats</h4>
+                        <ul class="list-none ml-0">
+                            <li>🔸 Competition from Established Niche Players</li>
+                            <li>🔸 Challenges in Content Moderation & Quality</li>
+                            <li>🔸 Data Privacy & Security Regulations (GDPR)</li>
+                            <li>🔸 User Adoption Hurdles (Chicken-and-Egg)</li>
+                            <li>🔸 Monetization Resistance (if value unclear)</li>
+                        </ul>
+                    </div>
+                </div>
+                 <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Critical KSF Considerations (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Trust as the Ultimate KSF Multiplier:</h4>
+                    <p>Trust in content quality, IP protection, fair monetization, and data security is foundational. It amplifies all other KSFs. Lapses can be detrimental.</p>
+                    <h4>The "Synergy Metric" - Measuring Integrated Success:</h4>
+                    <p>Track metrics showing how academic and professional sides interact and create combined value (e.g., students connecting with lecturers whose material they used, job applications after engaging with career-related academic content).</p>
+                    <h4>Lecturer Onboarding as a Dual Catalyst:</h4>
+                    <p>Attracting initial lecturers seeds both academic content (for students) and the initial professional network. This is a high-leverage activity.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="future-vision" class="section">
+            <div class="card">
+                <h2>Future Vision & Strategic Roadmap ✨</h2>
+                <p>EduProLink must not only meet current needs but also evolve with future trends in EdTech and professional networking. This section explores potential advancements in AI, micro-credentials, lifelong learning, and strategic expansion areas to ensure long-term relevance, growth, and impact. Continuous measurement and iteration based on robust feedback loops will be key.</p>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold">Evolving with EdTech & Professional Networking Trends (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Deeper and More Sophisticated AI Integration:</h4>
+                    <ul>
+                        <li><strong>AI-Driven Personalized Learning & Career Pathways:</strong> Suggest sequences of documents, micro-courses, skills to develop; offer nuanced career coaching.</li>
+                        <li><strong>Advanced Content Analytics for Lecturers:</strong> Insights on content usage, challenging concepts for students, trending topics, material improvement suggestions.</li>
+                        <li><strong>Intelligent Skill Matching and Endorsement:</strong> Accurately map skills from content, facilitate skill endorsements.</li>
+                    </ul>
+                    <h4>Embracing Micro-credentials and Skill-Based Learning:</h4>
+                    <ul>
+                        <li><strong>Platform-Native Micro-credentials:</strong> Lecturers bundle materials into "micro-courses" with platform-specific badges/certificates.</li>
+                        <li><strong>Integration with External Credential Providers:</strong> Showcase verified external credentials.</li>
+                        <li><strong>Skills as a Central Organizing Principle:</strong> Focus platform architecture and algorithms around skills.</li>
+                    </ul>
+                    <h4>Fostering a Lifelong Learning Ecosystem:</h4>
+                    <ul>
+                        <li><strong>Catering to Professionals for Upskilling/Reskilling:</strong> Features and content for working professionals.</li>
+                        <li><strong>Alumni Engagement:</strong> Continued value for alumni (networking, content, mentorship).</li>
+                    </ul>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Potential Expansion Areas (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Deeper Integration with University Systems:</h4>
+                    <ul>
+                        <li><strong>LMS Integration (Canvas, Moodle):</strong> Synchronize materials between EduProLink and institutional LMS.</li>
+                        <li><strong>Career Services Integration:</strong> Specialized module for university career centers (job postings, employer connections, analytics).</li>
+                        <li><strong>Alumni Network Platforms:</strong> Serve as a dynamic platform for university alumni networks.</li>
+                    </ul>
+                    <h4>Strategic Corporate Partnerships:</h4>
+                    <ul>
+                        <li><strong>Premium Talent Acquisition Services:</strong> Advanced tools for employers to recruit based on rich EduProLink profiles.</li>
+                        <li><strong>Corporate Upskilling/Reskilling Solutions:</strong> Curated access to academic content for employee training.</li>
+                        <li><strong>Sponsored Academic Challenges & Real-World Projects:</strong> Practical experience for students, fresh perspectives for companies.</li>
+                    </ul>
+                    <h4>Global Expansion and Localization:</h4>
+                    <ul>
+                        <li>Target key international markets.</li>
+                        <li>Localize interface, content, and networking etiquette.</li>
+                        <li>Build local student and lecturer communities.</li>
+                    </ul>
+                </div>
+                
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Measuring Success & Iteration (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>Key Metrics for Students:</h4>
+                    <p>Activity (DAU/MAU), document engagement, network growth, career-related actions, conversion & retention.</p>
+                    <h4>Key Metrics for Lecturers:</h4>
+                    <p>Activity, content contribution & performance (sales, revenue), profile engagement, student engagement with their content, conversion & retention.</p>
+                    <h4>Overall Platform Health Metrics:</h4>
+                    <p>Total user growth, retention rates, student/lecturer ratio, avg. content quality, user satisfaction (NPS, CSAT), financial performance (MRR, ARPU, LTV).</p>
+                    <h4>Crucial Synergy Metrics:</h4>
+                    <p>Track student-lecturer connections post-material use, job applications linked to academic resource engagement, lecturer profile boosts from popular content.</p>
+                    <h4>Robust Feedback Loops:</h4>
+                    <p>In-app surveys, forums, interviews, social media monitoring, support tickets to drive iterative development.</p>
+                </div>
+
+                <h3 class="collapsible-trigger cursor-pointer text-teal-600 hover:text-teal-700 font-semibold mt-6">Transformative Future Visions (Click to expand) <span class="arrow_icon">▼</span></h3>
+                <div class="collapsible-content">
+                    <h4>The Platform as a Dynamic "Skills Marketplace":</h4>
+                    <p>Evolve into an active, intelligent enabler of skill acquisition and career mobility by mapping academic content to in-demand skills, identifying user skill gaps, and connecting users to resources and experts. Opens employer partnership opportunities for talent sourcing and upskilling.</p>
+                    <h4>From "PR for Lecturers" to a "Thought Leadership and Creator Hub":</h4>
+                    <p>Become a comprehensive hub for academics to establish, cultivate, and monetize thought leadership. Offer tools for personal websites, advanced analytics, and hosting/monetizing live webinars, workshops, or short courses, positioning EduProLink as a sophisticated "creator economy" platform for academics.</p>
+                    <h4>The "Data-Driven University Partner" Model:</h4>
+                    <p>Become a strategic data partner for institutions by providing anonymized, aggregated insights on student learning patterns, skill development, and career interests. This helps universities tailor curricula, improve support services, and align programs with student/workforce demands, transforming the platform into a strategic investment for institutional improvement.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="section">
+            <div class="card">
+                <h2>Concluding Recommendations 🚀</h2>
+                <p>To successfully launch and scale EduProLink, integrating academic resource sharing with professional networking, the following strategic recommendations are paramount. These focus on prioritizing core value, aggressive user acquisition, building trust, designing for synergy, pursuing institutional partnerships, and strategically investing in AI. Adherence to these pillars will position EduProLink to address a significant market need and offer an innovative solution.</p>
+                <ol class="list-decimal ml-4 space-y-3">
+                    <li><strong>Prioritize Core Value in MVP and Phased Rollout:</strong> Concentrate on robust document sharing (with strong quality/integrity mechanisms), basic user profiles, simple lecturer monetization, and essential search/connection tools for initial launch. Roll out subsequent features in phases based on user feedback.</li>
+                    <li><strong>Implement a Dual-Pronged, Aggressive User Acquisition Strategy:</strong> Vigorously attract both lecturers (emphasizing monetization, branding, impact) and students (highlighting quality resources, career pathways). Use targeted incentives and marketing.</li>
+                    <li><strong>Establish and Maintain Trust as a Foundational Principle:</strong> Implement transparent IP/copyright policies, enforce academic integrity, invest in robust content moderation (AI & human), and be clear about data usage and monetization.</li>
+                    <li><strong>Design for Synergy and Measure Integrated Success:</strong> Ensure UX/UI facilitates seamless interaction between academic and professional components. Develop and track "synergy metrics" (e.g., academic activity leading to professional outcomes) and iterate based on these insights.</li>
+                    <li><strong>Aggressively Pursue Institutional Partnerships Early:</strong> Collaborate with universities for immediate scale, credibility, stable revenue, and valuable feedback.</li>
+                    <li><strong>Strategically Invest in AI for Personalization and Unique Value:</strong> Use AI for personalized experiences, intelligent recommendations (content, connections, career paths), and unique services (AI study tools, skill-gap analysis) to differentiate in the EdTech market.</li>
+                </ol>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 EduProLink Interactive Strategic Blueprint. For discussion purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        function setActiveSection(hash) {
+            sections.forEach(section => {
+                if ('#' + section.id === hash) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            if (mobileMenu.classList.contains('hidden') === false) {
+                mobileMenu.classList.add('hidden');
+            }
+            window.scrollTo(0,0); // Scroll to top of page on section change
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // e.preventDefault(); // Keep default behavior to update URL hash
+                const hash = link.getAttribute('href');
+                setActiveSection(hash);
+            });
+        });
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Initial section activation based on URL hash or default
+        const initialHash = window.location.hash || '#executive-summary';
+        setActiveSection(initialHash);
+        
+        // Handle hash changes (e.g., back/forward buttons)
+        window.addEventListener('hashchange', () => {
+            setActiveSection(window.location.hash);
+        });
+
+        // Collapsible sections
+        const collapsibleTriggers = document.querySelectorAll('.collapsible-trigger');
+        collapsibleTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const content = trigger.nextElementSibling;
+                content.classList.toggle('open');
+                const arrow = trigger.querySelector('.arrow_icon');
+                if (arrow) {
+                    arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
+                }
+            });
+        });
+
+        // Chart.js implementations
+        function createMarketChart(canvasId, label, data1, data2, dataLabel1, dataLabel2, unit) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [dataLabel1, dataLabel2],
+                    datasets: [{
+                        label: label + ` (${unit})`,
+                        data: [data1, data2],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)', // Blue
+                            'rgba(13, 148, 136, 0.6)'  // Teal
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(13, 148, 136, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: `Market Size (${unit})` }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ` ${unit}`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        if (document.getElementById('edTechMarketChart')) {
+            createMarketChart('edTechMarketChart', 'EdTech Market', 193, 884, '2024/25 Est.', '2033/34 Proj.', 'USD Billions');
+            // CAGR 15-20% can be added as a text note near the chart in HTML if needed.
+        }
+
+        if (document.getElementById('profNetworkingMarketChart')) {
+            createMarketChart('profNetworkingMarketChart', 'Professional Networking Market', 65.64, 201.12, '2025 Est.', '2030 Proj.', 'USD Billions');
+            // CAGR 25.1% can be added as a text note near the chart in HTML if needed.
+        }
+
+        // Monetization Table Interactivity
+        const monetizationTable = document.getElementById('monetizationTable');
+        if (monetizationTable) {
+            const featureCells = monetizationTable.querySelectorAll('.features-cell');
+            featureCells.forEach(cell => {
+                const originalText = cell.innerHTML;
+                const shortText = originalText.split('.')[0] + ". (Click to expand)";
+                
+                if (originalText.length > shortText.length + 20) { // Only shorten if significantly longer
+                    cell.innerHTML = shortText;
+                    cell.classList.add('cursor-pointer', 'hover:bg-slate-100');
+                    let isExpanded = false;
+
+                    cell.addEventListener('click', () => {
+                        isExpanded = !isExpanded;
+                        cell.innerHTML = isExpanded ? originalText : shortText;
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
